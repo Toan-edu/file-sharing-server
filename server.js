@@ -24,6 +24,14 @@ admin.initializeApp({
 const app = express();
 const port = process.env.PORT || 3001;
 
+// Middleware để lấy baseUrl dynamic
+app.use((req, res, next) => {
+  const protocol = req.headers['x-forwarded-proto'] || 'http';
+  const host = req.headers.host;
+  req.baseUrl = `${protocol}://${host}`;
+  next();
+});
+
 // Đọc key và IV từ file .env
 const encryptionKey = Buffer.from(process.env.ENCRYPTION_KEY, 'hex');
 const iv = Buffer.from(process.env.IV, 'hex');
@@ -208,7 +216,7 @@ app.post('/proxy-view', authenticate, async (req, res) => {
       expiryTime: Date.now() + 10 * 60 * 1000, // Thời hạn 10 phút
     });
 
-    const tempUrl = `https://file-sharing-server.onrender.com/temp-view/${tempToken}`; // Thay bằng domain Render
+    const tempUrl = `${req.baseUrl}/temp-view/${tempToken}`;
     res.json({ tempUrl });
   } catch (err) {
     console.error('Error generating temporary URL:', err);
@@ -281,7 +289,7 @@ app.post('/proxy-download', authenticate, async (req, res) => {
       expiryTime: Date.now() + 10 * 60 * 1000, // Thời hạn 10 phút
     });
 
-    const tempUrl = `https://file-sharing-server.onrender.com/temp-download/${tempToken}`; // Thay bằng domain Render
+    const tempUrl = `${req.baseUrl}/temp-download/${tempToken}`;
     res.json({ tempUrl });
   } catch (err) {
     console.error('Error generating temporary download URL:', err);
@@ -428,7 +436,7 @@ app.post('/upload', authenticate, upload.single('file'), async (req, res) => {
     }
 
     fs.writeFileSync(filePath, encrypted);
-    const fileUrl = `https://file-sharing-server.onrender.com/uploads/${filename}`; // Thay bằng domain Render
+    const fileUrl = `${req.baseUrl}/uploads/${filename}`;
 
     // Lưu metadata vào Firebase
     const newFileRef = admin.database().ref(`files/${req.user.uid}/${Date.now()}`);
