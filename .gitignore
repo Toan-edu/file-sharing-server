@@ -1,0 +1,9 @@
+# Node.js
+node_modules/
+.env
+firebase-service-account.json
+.DS_Store
+
+# Build
+build/
+dist/
