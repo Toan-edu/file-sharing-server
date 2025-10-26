@@ -10,11 +10,17 @@ const cors = require('cors');
 const crypto = require('crypto');
 
 // Khởi tạo Firebase Admin
+let firebaseConfig;
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+  firebaseConfig = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+} else {
+  throw new Error('Missing FIREBASE_SERVICE_ACCOUNT environment variable');
+}
+
 admin.initializeApp({
-  credential: admin.credential.cert(require('./firebase-service-account.json')),
+  credential: admin.credential.cert(firebaseConfig),
   databaseURL: process.env.FIREBASE_DATABASE_URL
 });
-
 const app = express();
 const port = process.env.PORT || 3001;
 
