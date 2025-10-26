@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: file-sharing-server
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: ~18
+      - key: ENCRYPTION_KEY
+        fromDatabase:
+          name: file-sharing-env
+          property: encryption_key
+      - key: IV
+        fromDatabase:
+          name: file-sharing-env
+          property: iv
+      - key: FIREBASE_DATABASE_URL
+        fromDatabase:
+          name: file-sharing-env
+          property: firebase_database_url
+    disk:
+      name: file-storage
+      mountPath: /opt/render/project/src/Uploads
+      sizeGB: 1
